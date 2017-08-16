@@ -1,0 +1,18 @@
+Prove the eventual consistency properties of Cassandra
+
+1) If keyspace has a replication factor of 1 and nodes are 2.
+Both the nodes have to be up for any read/write .
+
+2) If keyspace has a replication factor of 2 .
+
+    a) start node1 and node2
+    a) Kill node1
+    b) write to node2
+    c) kill node2
+    d) restart node1
+    e) Check for stale data
+    f) restart node2
+    h) Wait for the update to propogate via gossip protocols.
+
+This exercise proves the eventual consistency properties.
+
