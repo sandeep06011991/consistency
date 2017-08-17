@@ -1,8 +1,8 @@
 Phase 1:
     Infrastructure:
 a) Ant based build environment (DONE)
-b) Logging setup
-c) RMI for server-server
+b) Logging setup (WORKING)
+c) RMI for server-server(WORKING)
 d) Database Driver
 
 Phase 2:

@@ -10,6 +10,11 @@
 
     <target name="clean" description="Clean output directories">
         <delete dir="${build.dir}"/>
+        <delete>
+            <fileset dir=".">
+                <include name="*.log"/>
+            </fileset>
+        </delete>
     </target>
 
     <target name="build" description="Compile source tree java files" depends="clean">
