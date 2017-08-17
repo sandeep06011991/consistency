@@ -1,0 +1,9 @@
+Phase 1:
+    Infrastructure:
+a) Ant based build environment (DONE)
+b) Logging setup
+c) RMI for server-server
+d) Database Driver
+
+Phase 2:
+    Actual problem of algorithms

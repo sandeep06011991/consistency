@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<project name="Consistency" >
+
+    <target name="info">
+        <echo>Hello World - Welcome to my pet Project!</echo>
+    </target>
+
+    <property name="src.dir" value="src/server"/>
+    <property name="build.dir" value="build"/>
+
+    <target name="clean" description="Clean output directories">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="build" description="Compile source tree java files" depends="clean">
+        <mkdir dir="${build.dir}"/>
+        <javac destdir="${build.dir}" source="1.5" target="1.5">
+            <src path="${src.dir}"/>
+        </javac>
+    </target>
+
+    <target name="build-jar" depends="build">
+        <jar destfile="${build.dir}/Hello.jar"
+            basedir="${build.dir}" includes="server/**">
+            <manifest>
+                <attribute name="Main-Class" value="server.HelloWorld"/>
+            </manifest>
+
+        </jar>
+    </target>
+
+    <target name="execute"  depends="build">
+        <java classname="server.HelloWorld" classpath="build/" />
+    </target>
+
+    <target name="jar-execute" depends="build-jar">
+        <java classname="server.HelloWorld">
+            <classpath>
+                <pathelement location="build/Hello.jar"/>
+            </classpath>
+        </java>
+    </target>
+
+</project>
