@@ -16,7 +16,7 @@ class Log{
     private static void initialize(){
         try {
             logger.setLevel(Level.FINE);
-            Handler handler = new FileHandler("server.log");
+            Handler handler = new FileHandler("log/server.log");
             handler.setFormatter(new SimpleFormatter());
             logger.addHandler(handler);
         }catch(IOException ex){

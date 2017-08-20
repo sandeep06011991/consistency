@@ -1,9 +1,14 @@
 Phase 1:
     Infrastructure:
 a) Ant based build environment (DONE)
-b) Logging setup (WORKING)
-c) RMI for server-server(WORKING)
-d) Database Driver
+b) Logging setup (DONE)
+    Sunday pipeline
+c) Change of plans use sockets.
+   i) Create client server Socket connection (Done)
+d) Database Driver (Do a simple query)
+e) Clean up an deploy (BREAK)
 
 Phase 2:
     Actual problem of algorithms
+    a) Server side consistency
+    b) Client Side consistency

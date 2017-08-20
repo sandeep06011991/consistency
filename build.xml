@@ -5,7 +5,9 @@
         <echo>Hello World - Welcome to my pet Project!</echo>
     </target>
 
-    <property name="src.dir" value="src/server"/>
+    <property name="server.src" value="src/server"/>
+    <property name="client.src" value="src/client"/>
+
     <property name="build.dir" value="build"/>
 
     <target name="clean" description="Clean output directories">
@@ -17,33 +19,42 @@
         </delete>
     </target>
 
-    <target name="build" description="Compile source tree java files" depends="clean">
+    <target name="build-server" description="Compile server source tree java files">
         <mkdir dir="${build.dir}"/>
         <javac destdir="${build.dir}" source="1.5" target="1.5">
-            <src path="${src.dir}"/>
+            <src path="${server.src}"/>
+        </javac>
+    </target>
+    <target name="build-client" description="Compile client source tree java files">
+        <mkdir dir="${build.dir}"/>
+        <javac destdir="${build.dir}" source="1.5" target="1.5">
+            <src path="${client.src}"/>
         </javac>
     </target>
 
-    <target name="build-jar" depends="build">
-        <jar destfile="${build.dir}/Hello.jar"
-            basedir="${build.dir}" includes="server/**">
-            <manifest>
-                <attribute name="Main-Class" value="server.HelloWorld"/>
-            </manifest>
+    <!--<target name="build-jar" depends="build">-->
+        <!--<jar destfile="${build.dir}/Hello.jar"-->
+            <!--basedir="${build.dir}" includes="server/**">-->
+            <!--<manifest>-->
+                <!--<attribute name="Main-Class" value="server.HelloWorld"/>-->
+            <!--</manifest>-->
 
-        </jar>
+        <!--</jar>-->
+    <!--</target>-->
+
+    <target name="execute-server"  depends="build-server">
+        <java classname="server.Server" classpath="build/" />
+    </target>
+    <target name="execute-client"  depends="build-client">
+        <java classname="client.Client" classpath="build/" />
     </target>
 
-    <target name="execute"  depends="build">
-        <java classname="server.HelloWorld" classpath="build/" />
-    </target>
-
-    <target name="jar-execute" depends="build-jar">
-        <java classname="server.HelloWorld">
-            <classpath>
-                <pathelement location="build/Hello.jar"/>
-            </classpath>
-        </java>
-    </target>
+    <!--<target name="jar-execute" depends="build-jar">-->
+        <!--<java classname="server.HelloWorld">-->
+            <!--<classpath>-->
+                <!--<pathelement location="build/Hello.jar"/>-->
+            <!--</classpath>-->
+        <!--</java>-->
+    <!--</target>-->
 
 </project>
