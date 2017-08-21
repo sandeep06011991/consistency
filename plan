@@ -5,10 +5,19 @@ b) Logging setup (DONE)
     Sunday pipeline
 c) Change of plans use sockets.
    i) Create client server Socket connection (Done)
-d) Database Driver (Do a simple query)
+d) Database Driver (Working)
+   Run DataStax Server.
+   Working somewhat but need to add JAR.
+   Clean up complete build environment and ant
+   (DONE)
 e) Clean up an deploy (BREAK)
 
 Phase 2:
     Actual problem of algorithms
     a) Server side consistency
     b) Client Side consistency
+
+
+Some important commands
+Run this first to install run time dependecies to lib
+mvn dependency:copy-dependencies -DoutputDirectory=lib

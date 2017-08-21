@@ -2,13 +2,16 @@
 <project name="Consistency" >
 
     <target name="info">
-        <echo>Hello World - Welcome to my pet Project!</echo>
+        <echo>Hello World - Welcome to my pet Project on consistency !</echo>
     </target>
 
     <property name="server.src" value="src/server"/>
     <property name="client.src" value="src/client"/>
 
     <property name="build.dir" value="build"/>
+    <path id="external.classpath">
+        <pathelement location="lib/*.jar"/>
+    </path>
 
     <target name="clean" description="Clean output directories">
         <delete dir="${build.dir}"/>
@@ -21,10 +24,14 @@
 
     <target name="build-server" description="Compile server source tree java files">
         <mkdir dir="${build.dir}"/>
-        <javac destdir="${build.dir}" source="1.5" target="1.5">
+        <javac destdir="${build.dir}" >
+            <classpath>
+                <fileset dir="lib"/>
+            </classpath>
             <src path="${server.src}"/>
         </javac>
     </target>
+    
     <target name="build-client" description="Compile client source tree java files">
         <mkdir dir="${build.dir}"/>
         <javac destdir="${build.dir}" source="1.5" target="1.5">
@@ -32,29 +39,22 @@
         </javac>
     </target>
 
-    <!--<target name="build-jar" depends="build">-->
-        <!--<jar destfile="${build.dir}/Hello.jar"-->
-            <!--basedir="${build.dir}" includes="server/**">-->
-            <!--<manifest>-->
-                <!--<attribute name="Main-Class" value="server.HelloWorld"/>-->
-            <!--</manifest>-->
-
-        <!--</jar>-->
-    <!--</target>-->
-
-    <target name="execute-server"  depends="build-server">
-        <java classname="server.Server" classpath="build/" />
-    </target>
-    <target name="execute-client"  depends="build-client">
-        <java classname="client.Client" classpath="build/" />
+    <target name="server-jar" depends="build-server">
+        <jar destfile="${build.dir}/server.jar"
+            basedir="${build.dir}" includes="server/**">
+            <manifest>
+                <attribute name="Main-Class" value="server.Server"/>
+            </manifest><!--<target name="jar-execute" depends="build-jar">-->
+            <zipgroupfileset dir="lib" includes="**/*.jar"/>
+        </jar>
     </target>
 
-    <!--<target name="jar-execute" depends="build-jar">-->
-        <!--<java classname="server.HelloWorld">-->
-            <!--<classpath>-->
-                <!--<pathelement location="build/Hello.jar"/>-->
-            <!--</classpath>-->
-        <!--</java>-->
-    <!--</target>-->
+    <target name="run-server" depends="server-jar">
+        <java fork="yes" classname="server.Server">
+            <classpath>
+                <pathelement location="build/server.jar"/>
+            </classpath>
+        </java>
+    </target>
 
 </project>
