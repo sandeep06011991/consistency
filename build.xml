@@ -9,6 +9,7 @@
     <property name="client.src" value="src/client"/>
 
     <property name="build.dir" value="build"/>
+
     <path id="external.classpath">
         <pathelement location="lib/*.jar"/>
     </path>
@@ -31,7 +32,7 @@
             <src path="${server.src}"/>
         </javac>
     </target>
-    
+
     <target name="build-client" description="Compile client source tree java files">
         <mkdir dir="${build.dir}"/>
         <javac destdir="${build.dir}" source="1.5" target="1.5">
@@ -49,10 +50,27 @@
         </jar>
     </target>
 
+    <target name="client-jar" depends="build-client">
+        <jar destfile="${build.dir}/client.jar"
+             basedir="${build.dir}" includes="client/**">
+            <manifest>
+                <attribute name="Main-Class" value="client.Client"/>
+            </manifest><!--<target name="jar-execute" depends="build-jar">-->
+        </jar>
+    </target>
+
     <target name="run-server" depends="server-jar">
         <java fork="yes" classname="server.Server">
             <classpath>
                 <pathelement location="build/server.jar"/>
+            </classpath>
+        </java>
+    </target>
+
+    <target name="run-client" depends="client-jar">
+        <java  classname="client.Client">
+            <classpath>
+                <pathelement location="build/client.jar"/>
             </classpath>
         </java>
     </target>
