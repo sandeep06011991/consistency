@@ -61,6 +61,7 @@
 
     <target name="run-server" depends="server-jar">
         <java fork="yes" classname="server.Server">
+            <arg value="${node_id}"/>
             <classpath>
                 <pathelement location="build/server.jar"/>
             </classpath>

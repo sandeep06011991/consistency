@@ -3,7 +3,7 @@ package  server;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;
+import com.datastax.driver.core.exceptions.SyntaxError;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -13,7 +13,7 @@ import java.net.Socket;
 public class Server {
     Session session;
     Cluster cluster;
-
+    int node_id;
     class ClientListener extends Thread {
 
         public void run(){
@@ -25,21 +25,26 @@ public class Server {
                     DataOutputStream out=new DataOutputStream(socket.getOutputStream());
                     String query=in.readUTF();
                     System.out.println("Server received:"+query);
-                    for (Row row : session.execute(query)) {
-                        out.writeUTF(row.toString());
+                    try{
+                        for (Row row : session.execute(query)) {
+                            out.writeUTF(row.toString());
+                        }
+                    }catch (SyntaxError se){
+                        out.writeUTF("Syntax Error.Try again");
                     }
                     socket.close();
                 }
             }catch(Exception exception){
-
+                System.out.print("Something wierd happenned");
             }
 
         }
     }
 
-    Server(){
-        String serverIP = "127.0.0.1";
-        String keyspace = "repl1";
+    Server(int node_id){
+        this.node_id=node_id;
+        String serverIP = Constants.getHostId(node_id);
+        String keyspace = Constants.getKeySpace();
         cluster = Cluster.builder()
                 .addContactPoints(serverIP)
                 .build();
@@ -51,7 +56,11 @@ public class Server {
 
 
     public static void main(String args[]) {
-        new Server();
+        if(args.length!=1){
+            System.out.print("run as Server ");
+        }
+        int node_id=Integer.parseInt(args[0]);
+        new Server(node_id);
 
 //        String serverIP = "127.0.0.1";
 //        String keyspace = "repl1";
@@ -67,5 +76,5 @@ public class Server {
 //        for (Row row : session.execute(cqlStatement)) {
 //            System.out.println(row.toString());
 //        }
-    }
+        }
     }

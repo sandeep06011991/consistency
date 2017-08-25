@@ -18,6 +18,12 @@ Phase 2:
         a) Build one client and one server with updates flowing through.(start 2:00pm)
             0) Query flows from client to host (DONE)
             i) One DB node is working (Working 3:24)
+        Day-1// bunking work make it count.
+        Ideally finish the whole project
+        a) Setup and validate single client server model(DONE)
+        b) Create 2 Nodes
+        c) Deploy server nodes
+        The whole thing will get cleared in your head as you code up.
 
 
         b) Build one client and multi server environment.
@@ -30,3 +36,9 @@ Phase 2:
 Some important commands
 a) Run this first to install run time dependecies to lib
         mvn dependency:copy-dependencies -DoutputDirectory=lib
+b) Cassandra first node
+   create keyspace
+        CREATE KEYSPACE Excelsior
+          WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
+c) running server with args1
+      ant run-server -Dnode_id=1
