@@ -24,10 +24,8 @@ Phase 2:
         b) Create 2 Nodes
         c) Deploy server nodes
         The whole thing will get cleared in your head as you code up.
-
-
-        b) Build one client and multi server environment.
-        c) Enforce ordering in 2 client and 2 server environment.
+        Code up whole multicast algorithm, dont think on other components.
+        Test multicast with 3 nodes. with 1 and 3 simultaneously sending
 
     b) Client Side consistency
         ii)
