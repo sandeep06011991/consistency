@@ -6,27 +6,22 @@ import java.util.logging.*;
 
 
 class Log{
-    public static Logger logger=Logger.getLogger("server");
 
+    Logger logger;
 
-    private Log(){}
-
-    private static boolean initalized=false ;
-
-    private static void initialize(){
+    Log(int node_id){
+        logger=Logger.getLogger("server");
         try {
             logger.setLevel(Level.FINE);
-            Handler handler = new FileHandler("log/server.log");
+            Handler handler = new FileHandler("log/server"+node_id+".log");
             handler.setFormatter(new SimpleFormatter());
             logger.addHandler(handler);
         }catch(IOException ex){
             System.out.println("Could not create a log file");
         }
-        initalized=true;
     }
 
-    public static void info(String msg){
-        if(!initalized)initialize();
+    void log(String msg){
         logger.info(msg);
     }
 }

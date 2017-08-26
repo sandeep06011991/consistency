@@ -26,9 +26,9 @@ public class Server {
     int number_of_servers;
     Lock lock;
     Proposal current_proposal;
-    Map<Integer,Proposal> proposal_ack_map=new HashMap<>();
-    ArrayList<Proposal> pending_proposal_list=new ArrayList<>();
-
+    Map<Integer,Proposal> proposal_ack_map=new HashMap<Integer, Proposal>();
+    ArrayList<Proposal> pending_proposal_list=new ArrayList<Proposal>();
+    Log log;
 
     void sendStringToOtherServers(String msg){
         for(int server_port:Constants.SERVER_SERVER){
@@ -48,7 +48,7 @@ public class Server {
 
     void performWriteQuery(Proposal proposal){
         proposal_ack_map.remove(proposal.lamport_clock);
-        System.out.println("Proposal:"+proposal.lamport_clock+" Query:"+proposal.query);
+        log.log("Perform DB operation for Proposal:" + proposal.lamport_clock + " Query:" + proposal.query);
     }
 
     public void multicastAck(Proposal proposal){
@@ -151,13 +151,15 @@ public class Server {
 
         public void run(){
             try{
+                int port=Constants.getServerClientPort(node_id);
+                System.out.print(port+"Starting port");
                 ServerSocket serverSocket=new ServerSocket(Constants.getServerClientPort(node_id));
                 while(true){
                     Socket socket=serverSocket.accept();
                     DataInputStream  in =new DataInputStream(socket.getInputStream());
                     DataOutputStream out=new DataOutputStream(socket.getOutputStream());
                     String query=in.readUTF();
-                    System.out.println("Server received:"+query);
+                    log.log("Server received:" + query);
                     try{
                         acceptWriteQuery(query);
                         //Build a mechanism to recognize a READ/WRITE
@@ -184,17 +186,22 @@ public class Server {
         //setup some constants
         String dbIP = Constants.getDBIP(node_id);
         String keyspace = Constants.getKeySpace();
-        cluster = Cluster.builder()
-                .addContactPoints(dbIP)
-                .build();
-        session = cluster.connect(keyspace);
-        new ServerListener().run();
-        new ClientListener().run();
+//        cluster = Cluster.builder()
+//                .addContactPoints(dbIP)
+//                .build();
+//        session = cluster.connect(keyspace);
+        log=new Log(node_id);
+
+        new ServerListener().start();
+        new ClientListener().start();
+        log.log("Hello world");
+
     }
 
 
 
     public static void main(String args[]) {
+
         if(args.length!=1){
             System.out.print("run as Server");
         }
