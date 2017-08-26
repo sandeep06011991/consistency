@@ -26,9 +26,12 @@ Phase 2:
         The whole thing will get cleared in your head as you code up.
         Code up whole multicast algorithm, dont think on other components.
         Test multicast with 3 nodes. with 1 and 3 simultaneously sending
-
+        Wrote Code for Server Side Consistency.
+    TODO:
+        Test ServerSide Consistency.
     b) Client Side consistency
-        ii)
+        Server either responds with OK or DB is Inconsistent.
+        Server does not corrective actions.
 
 
 Some important commands
