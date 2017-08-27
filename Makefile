@@ -1,4 +1,5 @@
 server:
+	./kill_all.sh
 	rm -rf log/
 	mkdir log
 	ant server-jar

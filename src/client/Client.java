@@ -13,10 +13,11 @@ public class Client{
             DataOutputStream out=new DataOutputStream(client.getOutputStream());
             DataInputStream in =new DataInputStream(client.getInputStream()) ;
             out.writeUTF(query);
-            while(true) {
-                String str = in.readUTF();
-                System.out.println(str);
-            }
+//            while(true) {
+//                String str = in.readUTF();
+//                System.out.println(str);
+//            }
+
         }catch (IOException e){
             e.printStackTrace();
             System.out.println("Finished reading");
@@ -30,16 +31,18 @@ public class Client{
         String query;
         System.out.println("Enter string in the following format");
         System.out.println("[Port]:[IP] \"<Query to execute\"");
-        while(true){
-            String s=console.readLine();
-            String[] ss=s.split("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?");
-            if(ss.length!=2){System.out.println("Incorrect format");continue;}
-            String[] s2=ss[0].split(":");
-            port=Integer.parseInt(s2[0]);
-            hostname=s2[1];
-            query=ss[1];
-            process(hostname,query,port);
-        }
+//        while(true){
+//            String s=console.readLine();
+//            String[] ss=s.split("\"?( |$)(?=(([^\"]*\"){2})*[^\"]*$)\"?");
+//            if(ss.length!=2){System.out.println("Incorrect format");continue;}
+//            String[] s2=ss[0].split(":");
+//            port=Integer.parseInt(s2[0]);
+//            hostname=s2[1];
+//            query=ss[1];
+            process("localhost","query1",12345);
+            System.out.println("Complete");
+            //            process(hostname,query,port);
+//        }
 
     }
 }

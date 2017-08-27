@@ -29,6 +29,13 @@ Phase 2:
         Wrote Code for Server Side Consistency.
     TODO:
         Test ServerSide Consistency.
+        Built Code to reuse port (DONE)
+        case 1: Single Node Update (Start:2:35)
+        (clean up LOGs)
+        case 2: 2 node concurrency resolution
+        case 3: 3 node with 2 node concurrency
+        case 4: pending accept Pipeline
+
     b) Client Side consistency
         Server either responds with OK or DB is Inconsistent.
         Server does not corrective actions.
@@ -43,3 +50,4 @@ b) Cassandra first node
           WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
 c) running server with args1
       ant run-server -Dnode_id=1
+      ${#process}

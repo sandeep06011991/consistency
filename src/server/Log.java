@@ -8,10 +8,11 @@ import java.util.logging.*;
 class Log{
 
     Logger logger;
-
+    String name;
     Log(int node_id){
         logger=Logger.getLogger("server");
         try {
+            name="Server"+node_id;
             logger.setLevel(Level.FINE);
             Handler handler = new FileHandler("log/server"+node_id+".log");
             handler.setFormatter(new SimpleFormatter());
@@ -22,6 +23,6 @@ class Log{
     }
 
     void log(String msg){
-        logger.info(msg);
+        logger.info(name+": "+msg);
     }
 }

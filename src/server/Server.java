@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class Server {
@@ -24,7 +25,7 @@ public class Server {
     int node_id;
     int lamport_clock;
     int number_of_servers;
-    Lock lock;
+    Lock lock=new ReentrantLock();
     Proposal current_proposal;
     Map<Integer,Proposal> proposal_ack_map=new HashMap<Integer, Proposal>();
     ArrayList<Proposal> pending_proposal_list=new ArrayList<Proposal>();
@@ -52,12 +53,14 @@ public class Server {
     }
 
     public void multicastAck(Proposal proposal){
+        log.log("Multicasting Acknowledgement for Proposal"+proposal.lamport_clock);
         proposal.acked=true;
         proposal.no_of_acks=proposal.no_of_acks+1;
         sendStringToOtherServers(proposal.getAckMsgFromProposal());
     }
 
     void acceptProposal(Proposal proposal){
+        log.log("Accepting Proposal"+proposal.lamport_clock);
         proposal_ack_map.put(new Integer(proposal.lamport_clock),proposal);
         current_proposal=proposal;
         proposal.acked=true;
@@ -71,8 +74,10 @@ public class Server {
         Proposal proposal=new Proposal(lamport_clock,query);
         lock.unlock();
         if(current_proposal==null){
+            log.log("Accepting as no pending proposal");
             acceptProposal(proposal);
         }else{
+            log.log("Postponing");
             pending_proposal_list.add(proposal);
             //Other queries receive headway
         }
@@ -83,15 +88,16 @@ public class Server {
     class ServerListener extends Thread {
 
         public void run(){
-            while(true){
                 try{
                     ServerSocket serverSocket=new ServerSocket(ssIP);
+
                     while(true){
                         Socket socket=serverSocket.accept();
                         DataInputStream dataInputStream=new DataInputStream(socket.getInputStream());
                         // Parsing string query
                         String ack_query=dataInputStream.readUTF();
-                        String[] ss=ack_query.split("$");
+                        log.log("Received on server port"+ack_query);
+                        String[] ss=ack_query.split("\\$");
                         String key=ss[0];
                         Integer lck=new Integer(Integer.parseInt(ss[1]));
                         String query=ss[2];
@@ -133,7 +139,7 @@ public class Server {
                                     }
                                 }
                                 if(!pending_proposal_list.isEmpty()){
-                                    pending_proposal_list.remove(0);
+                                    acceptProposal(pending_proposal_list.remove(0));
 
                                 }
                             }
@@ -141,9 +147,10 @@ public class Server {
                         }
                     }
                 }catch(Exception ex){
-                    System.out.print("Server Listener thread could not be started");
-                }
+                    log.log("Server Listener thread could not be started");
+
             }
+
         }
     }
 
@@ -152,7 +159,6 @@ public class Server {
         public void run(){
             try{
                 int port=Constants.getServerClientPort(node_id);
-                System.out.print(port+"Starting port");
                 ServerSocket serverSocket=new ServerSocket(Constants.getServerClientPort(node_id));
                 while(true){
                     Socket socket=serverSocket.accept();
@@ -172,7 +178,7 @@ public class Server {
                     socket.close();
                 }
             }catch(Exception exception){
-                System.out.print("Something wierd happenned");
+               log.log("Unable start Client listener socket");
             }
 
         }
@@ -194,7 +200,6 @@ public class Server {
 
         new ServerListener().start();
         new ClientListener().start();
-        log.log("Hello world");
 
     }
 
