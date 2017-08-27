@@ -31,10 +31,9 @@ Phase 2:
         Test ServerSide Consistency.
         Built Code to reuse port (DONE)
         case 1: Single Node Update (Start:2:35)
-        (clean up LOGs)
-        case 2: 2 node concurrency resolution
+        case 2: 2 node concurrency resolution (DONE)
         case 3: 3 node with 2 node concurrency
-        case 4: pending accept Pipeline
+        case 4: pending accept Pipeline (TODO)
 
     b) Client Side consistency
         Server either responds with OK or DB is Inconsistent.

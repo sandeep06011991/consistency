@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -65,6 +66,12 @@ public class Server {
         current_proposal=proposal;
         proposal.acked=true;
         proposal.no_of_acks=proposal.no_of_acks+1;
+        try {
+            TimeUnit.SECONDS.sleep(20);
+        }catch (InterruptedException ex){
+
+        }
+        log.log("Sending Accepted proposal to others");
         sendStringToOtherServers(proposal.getSendMsgFromProposal());
     }
 
