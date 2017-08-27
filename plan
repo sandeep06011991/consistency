@@ -27,15 +27,18 @@ Phase 2:
         Code up whole multicast algorithm, dont think on other components.
         Test multicast with 3 nodes. with 1 and 3 simultaneously sending
         Wrote Code for Server Side Consistency.
-    TODO:
+    Done
         Test ServerSide Consistency.
         Built Code to reuse port (DONE)
         case 1: Single Node Update (Start:2:35)
         case 2: 2 node concurrency resolution (DONE)
         case 3: 3 node with 2 node concurrency
-        case 4: pending accept Pipeline (TODO)
-
+        case 4: pending accept Pipeline DONE
+    TODO
+    Go Rapid coding mode
     b) Client Side consistency
+        FINISHED CODING
+        Review Code and Test it for all combinations
         Server either responds with OK or DB is Inconsistent.
         Server does not corrective actions.
 

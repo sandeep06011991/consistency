@@ -1,6 +1,7 @@
 package  server;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.SyntaxError;
 
@@ -60,37 +61,45 @@ public class Server {
         sendStringToOtherServers(proposal.getAckMsgFromProposal());
     }
 
-    void acceptProposal(Proposal proposal){
-        log.log("Accepting Proposal"+proposal.lamport_clock);
-        proposal_ack_map.put(new Integer(proposal.lamport_clock),proposal);
-        current_proposal=proposal;
-        proposal.acked=true;
-        proposal.no_of_acks=proposal.no_of_acks+1;
-        try {
-            TimeUnit.SECONDS.sleep(20);
-        }catch (InterruptedException ex){
+    class ProposalAccepterThread extends Thread{
+        Proposal proposal;
+        ProposalAccepterThread(Proposal proposal){
+            this.proposal=proposal;
+        }
+        public void run(){
+            log.log("Accepting Proposal"+proposal.lamport_clock);
+            proposal_ack_map.put(new Integer(proposal.lamport_clock),proposal);
+            current_proposal=proposal;
+            proposal.acked=true;
+            proposal.no_of_acks=proposal.no_of_acks+1;
+            try {
+                TimeUnit.SECONDS.sleep(20);
+            }catch (InterruptedException ex){
+
+            }
+            log.log("Sending Accepted proposal to others");
+            sendStringToOtherServers(proposal.getSendMsgFromProposal());
 
         }
-        log.log("Sending Accepted proposal to others");
-        sendStringToOtherServers(proposal.getSendMsgFromProposal());
     }
 
-    void acceptWriteQuery(String query){
+    int acceptWriteQuery(String query){
         lock.lock();
         lamport_clock=lamport_clock+10;
         Proposal proposal=new Proposal(lamport_clock,query);
         lock.unlock();
         if(current_proposal==null){
             log.log("Accepting as no pending proposal");
-            acceptProposal(proposal);
+            new ProposalAccepterThread(proposal).start();
+
         }else{
             log.log("Postponing");
             pending_proposal_list.add(proposal);
             //Other queries receive headway
         }
+        return proposal.lamport_clock;
 
     }
-
 
     class ServerListener extends Thread {
 
@@ -146,11 +155,9 @@ public class Server {
                                     }
                                 }
                                 if(!pending_proposal_list.isEmpty()){
-                                    acceptProposal(pending_proposal_list.remove(0));
-
+                                    new ProposalAccepterThread(pending_proposal_list.remove(0)).start();
                                 }
                             }
-
                         }
                     }
                 }catch(Exception ex){
@@ -171,14 +178,27 @@ public class Server {
                     Socket socket=serverSocket.accept();
                     DataInputStream  in =new DataInputStream(socket.getInputStream());
                     DataOutputStream out=new DataOutputStream(socket.getOutputStream());
+                    int query_clock=in.readInt();
+                    System.out.println("Last seen write's Lamport Clock"+query_clock);
+
                     String query=in.readUTF();
                     log.log("Server received:" + query);
                     try{
-                        acceptWriteQuery(query);
-                        //Build a mechanism to recognize a READ/WRITE
-//                        for (Row row : session.execute(query)) {
-//                            out.writeUTF(row.toString());
-//                        }
+                        if(query_clock>lamport_clock){
+                            log.log("Database is stale");
+                            out.writeInt(query_clock);
+                        }else{
+                            if(query.toLowerCase().contains("select")){
+                                //read Query
+                                out.writeInt(lamport_clock);
+                                for (Row row : session.execute(query)) {
+                                    out.writeUTF(row.toString());
+                                }
+                            }else{
+                                out.writeInt(acceptWriteQuery(query));
+                            }
+                        }
+
                     }catch (SyntaxError se){
                         out.writeUTF("Syntax Error.Try again");
                     }

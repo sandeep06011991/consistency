@@ -7,21 +7,25 @@ import java.net.Socket;
 import java.io.DataOutputStream;
 
 public class Client{
+    static int lastSeenWrite=0;
+
     public static void process(String hostname,String query,int port){
         try {
             Socket client = new Socket(hostname,port);
             DataOutputStream out=new DataOutputStream(client.getOutputStream());
             DataInputStream in =new DataInputStream(client.getInputStream()) ;
+            out.writeInt(lastSeenWrite);
             out.writeUTF(query);
-//            while(true) {
-//                String str = in.readUTF();
-//                System.out.println(str);
-//            }
-
+            lastSeenWrite=in.readInt();
+            while(true) {
+                String str = in.readUTF();
+                System.out.println(str);
+            }
         }catch (IOException e){
-            e.printStackTrace();
             System.out.println("Finished reading");
         }
+        System.out.println("Last seen write's Lamport Clock"+lastSeenWrite);
+
     }
 
     public static void main(String args[]){
