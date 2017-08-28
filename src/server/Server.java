@@ -21,11 +21,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Server {
     Session session;
     Cluster cluster;
-
     int ssIP;
     //IP for Server-Server Communication
     int node_id;
     int lamport_clock;
+    int db_clock;
     int number_of_servers;
     Lock lock=new ReentrantLock();
     Proposal current_proposal;
@@ -49,11 +49,6 @@ public class Server {
         }
     }
 
-    void performWriteQuery(Proposal proposal){
-        proposal_ack_map.remove(proposal.lamport_clock);
-        log.log("Perform DB operation for Proposal:" + proposal.lamport_clock + " Query:" + proposal.query);
-    }
-
     public void multicastAck(Proposal proposal){
         log.log("Multicasting Acknowledgement for Proposal"+proposal.lamport_clock);
         proposal.acked=true;
@@ -62,46 +57,39 @@ public class Server {
     }
 
     class ProposalAccepterThread extends Thread{
-        Proposal proposal;
+        private Proposal proposal;
+
         ProposalAccepterThread(Proposal proposal){
             this.proposal=proposal;
         }
         public void run(){
+            lock.lock();
             log.log("Accepting Proposal"+proposal.lamport_clock);
             proposal_ack_map.put(new Integer(proposal.lamport_clock),proposal);
-            current_proposal=proposal;
             proposal.acked=true;
             proposal.no_of_acks=proposal.no_of_acks+1;
+            lock.unlock();
             try {
                 TimeUnit.SECONDS.sleep(20);
+                // A hack to test Serverside consistency
             }catch (InterruptedException ex){
-
+                log.log("Timer created an exception");
             }
             log.log("Sending Accepted proposal to others");
             sendStringToOtherServers(proposal.getSendMsgFromProposal());
 
+
         }
-    }
-
-    int acceptWriteQuery(String query){
-        lock.lock();
-        lamport_clock=lamport_clock+10;
-        Proposal proposal=new Proposal(lamport_clock,query);
-        lock.unlock();
-        if(current_proposal==null){
-            log.log("Accepting as no pending proposal");
-            new ProposalAccepterThread(proposal).start();
-
-        }else{
-            log.log("Postponing");
-            pending_proposal_list.add(proposal);
-            //Other queries receive headway
-        }
-        return proposal.lamport_clock;
-
     }
 
     class ServerListener extends Thread {
+
+        void performWriteQuery(Proposal proposal){
+            proposal_ack_map.remove(proposal.lamport_clock);
+            db_clock=proposal.lamport_clock;
+            session.execute(proposal.query);
+            log.log("Perform DB operation for Proposal:" + proposal.lamport_clock + " Query:" + proposal.query);
+        }
 
         public void run(){
                 try{
@@ -121,7 +109,6 @@ public class Server {
 
                         lock.lock();
                         if(lck>lamport_clock){lamport_clock=(lck/10)*10+node_id;}
-                        lock.unlock();
 
                         if(!proposal_ack_map.containsKey(lck)){
                             proposal_ack_map.put(lck,new Proposal(lck.intValue(),query));
@@ -159,6 +146,7 @@ public class Server {
                                 }
                             }
                         }
+                        lock.unlock();
                     }
                 }catch(Exception ex){
                     log.log("Server Listener thread could not be started");
@@ -170,37 +158,57 @@ public class Server {
 
     class ClientListener extends Thread {
 
+        int acceptWriteQuery(String query){
+            lamport_clock=lamport_clock+10;
+            Proposal proposal=new Proposal(lamport_clock,query);
+            if(current_proposal==null){
+                log.log("Accepting as no pending proposal");
+                current_proposal=proposal;
+                new ProposalAccepterThread(proposal).start();
+
+            }else{
+                log.log("Postponing");
+                pending_proposal_list.add(proposal);
+                //Other queries receive headway
+            }
+            return proposal.lamport_clock;
+
+        }
+
         public void run(){
             try{
-                int port=Constants.getServerClientPort(node_id);
                 ServerSocket serverSocket=new ServerSocket(Constants.getServerClientPort(node_id));
                 while(true){
                     Socket socket=serverSocket.accept();
                     DataInputStream  in =new DataInputStream(socket.getInputStream());
                     DataOutputStream out=new DataOutputStream(socket.getOutputStream());
                     int query_clock=in.readInt();
-                    System.out.println("Last seen write's Lamport Clock"+query_clock);
-
+                    log.log("Client clock:"+query_clock);
                     String query=in.readUTF();
                     log.log("Server received:" + query);
                     try{
-                        if(query_clock>lamport_clock){
+                        lock.lock();
+                        if(query_clock>db_clock){
                             log.log("Database is stale");
                             out.writeInt(query_clock);
+                            out.writeUTF("Database stale:"+db_clock+"while client "+query_clock);
                         }else{
                             if(query.toLowerCase().contains("select")){
                                 //read Query
-                                out.writeInt(lamport_clock);
+                                out.writeInt(db_clock);
                                 for (Row row : session.execute(query)) {
                                     out.writeUTF(row.toString());
                                 }
                             }else{
                                 out.writeInt(acceptWriteQuery(query));
+                                out.writeUTF("Write Query Accepted");
                             }
                         }
-
+                        lock.unlock();
                     }catch (SyntaxError se){
                         out.writeUTF("Syntax Error.Try again");
+                    }finally {
+                        if(lock.tryLock()){lock.unlock();}
                     }
                     socket.close();
                 }
@@ -214,15 +222,16 @@ public class Server {
     Server(int node_id){
         this.node_id=node_id;
         this.lamport_clock=node_id;
+        db_clock=node_id;
         this.number_of_servers=Constants.PORT_LIST.length;
         this.ssIP=Constants.SERVER_SERVER[node_id-1];
         //setup some constants
         String dbIP = Constants.getDBIP(node_id);
         String keyspace = Constants.getKeySpace();
-//        cluster = Cluster.builder()
-//                .addContactPoints(dbIP)
-//                .build();
-//        session = cluster.connect(keyspace);
+        cluster = Cluster.builder()
+                .addContactPoints(dbIP)
+                .build();
+        session = cluster.connect(keyspace);
         log=new Log(node_id);
 
         new ServerListener().start();
