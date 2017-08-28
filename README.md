@@ -52,6 +52,7 @@ as a different node.
 10. make server (deploys the 2 server. Its just a quick way to run a sequence of commands)
 11. ant run-client: deploys the client
 12. To test Server centric consistency:
+
         ant run-client://Run in terminal 1
         12347:localhost "insert into table1(id,col1) values (10,'seven');"
         ant run-client://Run in terminal 2
@@ -60,6 +61,7 @@ as a different node.
     update 1 happens before update 2 in both nodes. As can be confirmed from the logs
 
 13. To test Client-centric consistency:
+
         ant run-client://
         12347:localhost "insert into table1(id,col1) values (10,'seven');"
         12345:localhost "select * from table1;"
