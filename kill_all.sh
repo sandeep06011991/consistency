@@ -1,3 +1,6 @@
+#This script is used to kill processes bound to
+#the list of ports given below
+
 declare -a array=(12345 12346 12347 12348)
 
 arraylength=${#array[@]}
