@@ -68,3 +68,10 @@ as a different node.
     
     This should return database stale for 10 seconds after which as the update gets
     propagated. The actual value is returned.                              
+    
+### Mistakes/Improvement    
+
+1. Lamport clock should be persistant and stored in the Database
+
+2. Used course grained single lock. Can improve performance by having 
+fine grained lock.    
